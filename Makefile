@@ -18,7 +18,7 @@ CFLAGS	=	-Wall -Wextra -Werror
 
 FM		=	-framework OpenGL -framework AppKit
 
-LIBS	=	-Llibft -lft -Lmlx -lmlx
+LIBS	=	-Llibft -lft -Lmlx -lmlx -lm
 
 %.o:		%.c
 			$(CC) $(CFLAGS) -Imlx -c $< -o $@
