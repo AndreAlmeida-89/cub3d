@@ -1,4 +1,7 @@
 SRC =		src/main.c 				\
+			src/parse_file.c		\
+			src/print_error.c		\
+			src/destroy_game.c		\
 
 SRC_B =		src_bonus/main_bonus.c	\
 

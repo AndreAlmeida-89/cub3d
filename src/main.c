@@ -6,66 +6,12 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 21:21:48 by andde-so          #+#    #+#             */
-/*   Updated: 2023/11/01 16:57:18 by andde-so         ###   ########.fr       */
+/*   Updated: 2023/11/03 17:26:55 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "mlx.h"
-#include "../libft/libft.h"
-#include <stdio.h>
-#include <math.h>
+#include "../includes/cub3d.h"
 
-#define WIN_HEIGHT 1080
-#define WIN_WIDTH 1920
-#define MAP_HEIGHT 9
-#define MAP_WIDTH 16
-#define TILE_SIZE 120
-#define PLAYER_SIZE (TILE_SIZE / 4)
-
-typedef struct s_v2
-{
-	float x;
-	float y;
-} t_v2;
-
-typedef struct s_position
-{
-	t_v2 pos;
-	t_v2 dir;
-} t_position;
-
-typedef struct s_data
-{
-	void *img;
-	char *addr;
-	int bits_per_pixel;
-	int line_length;
-	int endian;
-} t_data;
-
-typedef struct s_game
-{
-	t_data *game_screen;
-	t_data *player_img;
-	t_data *wall_img;
-	void *mlx;
-	void *mlx_win;
-	t_position player_pos;
-	char **map;
-} t_game;
-
-typedef enum e_key
-{
-	K_W = 13,
-	K_A = 0,
-	K_S = 1,
-	K_D = 2,
-	K_UP = 126,
-	K_LEFT = 123,
-	K_DOWN = 125,
-	K_RIGHT = 124,
-	K_ESC = 53
-} t_key;
 
 void my_mlx_pixel_put(t_data *data, int y, int x, int color)
 {
@@ -75,45 +21,32 @@ void my_mlx_pixel_put(t_data *data, int y, int x, int color)
 	*(unsigned int *)dst = color;
 }
 
-t_data *square_tile(void *mlx, int color)
+t_data load_img_from_path(void *mlx, char *path)
 {
-	t_data *img;
-	int i;
-	int j;
+	t_data img;
 
-	img = malloc(sizeof(t_data));
-	if (!img)
-		return (NULL);
-
-	img->img = mlx_new_image(mlx, TILE_SIZE, TILE_SIZE);
-	img->addr = mlx_get_data_addr(img->img,
-								  &img->bits_per_pixel,
-								  &img->line_length,
-								  &img->endian);
-	i = -1;
-	while (++i < TILE_SIZE)
-	{
-		j = -1;
-		while (++j < TILE_SIZE)
-			my_mlx_pixel_put(img, i, j, color);
-	}
+	img.img = mlx_xpm_file_to_image(mlx,
+									path,
+									&img.bits_per_pixel,
+									&img.line_length);
+	img.addr = mlx_get_data_addr(img.img,
+								 &img.bits_per_pixel,
+								 &img.line_length,
+								 &img.endian);
 	return (img);
 }
 
-t_data *circle(void *mlx, int color, int circle_radius)
+t_data circle(void *mlx, int color, int circle_radius)
 {
-	t_data *img;
+	t_data img;
 	int i;
 	int j;
 
-	img = malloc(sizeof(t_data));
-	if (!img)
-		return (NULL);
-	img->img = mlx_new_image(mlx, circle_radius, circle_radius);
-	img->addr = mlx_get_data_addr(img->img,
-								  &img->bits_per_pixel,
-								  &img->line_length,
-								  &img->endian);
+	img.img = mlx_new_image(mlx, circle_radius, circle_radius);
+	img.addr = mlx_get_data_addr(img.img,
+								 &img.bits_per_pixel,
+								 &img.line_length,
+								 &img.endian);
 	i = -1;
 	while (++i < circle_radius)
 	{
@@ -121,30 +54,15 @@ t_data *circle(void *mlx, int color, int circle_radius)
 		while (++j < circle_radius)
 		{
 			if (sqrt(pow(i - circle_radius / 2, 2) + pow(j - circle_radius / 2, 2)) < circle_radius / 2)
-				my_mlx_pixel_put(img, i, j, color);
+				my_mlx_pixel_put(&img, i, j, color);
 		}
 	}
 	return (img);
 }
 
-void destroy_game(t_game *game)
-{
-	mlx_destroy_window(game->mlx, game->mlx_win);
-	if (game->wall_img)
-		free(game->wall_img);
-	if (game->player_img)
-		free(game->player_img);
-	if (game->game_screen)
-		free(game->game_screen);
-	int i = -1;
-	while (++i < MAP_HEIGHT)
-		free(game->map[i]);
-	free(game->map);
-	exit(0);
-}
-
 void move_player(t_game *game, t_key key)
 {
+
 	if (key == K_W) // move foward
 	{
 		game->player_pos.pos.x += game->player_pos.dir.x * 10;
@@ -167,21 +85,6 @@ void move_player(t_game *game, t_key key)
 	}
 }
 
-void draw_radius_to_player(t_game *game)
-{
-	t_data *player_image = game->player_img;
-	int radius_size = PLAYER_SIZE / 2;
-	float angle;
-	int i;
-	// draw player radius
-	angle = atan2(game->player_pos.dir.y, game->player_pos.dir.x);
-	i = -1;
-	while (++i < radius_size)
-	{
-		my_mlx_pixel_put(player_image, radius_size + i * sin(angle), radius_size + i * cos(angle), 0x00FF0000);
-	}
-}
-
 int key_hook(int keycode, void *param)
 {
 	t_game *game;
@@ -196,6 +99,14 @@ int key_hook(int keycode, void *param)
 	return (0);
 }
 
+int ft_strlen_array(char **array)
+{
+	int i = -1;
+	while (array[++i])
+		;
+	return (i);
+}
+
 int render_next_frame(void *param)
 {
 	t_game *game;
@@ -204,26 +115,25 @@ int render_next_frame(void *param)
 	mlx_clear_window(game->mlx, game->mlx_win);
 	int i = -1;
 	int j;
-	while (++i < MAP_HEIGHT)
+	while (++i < game->map_height)
 	{
 		j = -1;
-		while (++j < MAP_WIDTH)
+		while (++j < game->map_width)
 		{
 			if (game->map[i][j] == '1')
 				mlx_put_image_to_window(game->mlx,
 										game->mlx_win,
-										game->wall_img->img,
+										game->wall_img[2].img,
 										j * TILE_SIZE,
 										i * TILE_SIZE);
 		}
 	}
 	mlx_put_image_to_window(game->mlx,
 							game->mlx_win,
-							game->player_img->img,
+							game->player_img.img,
 							game->player_pos.pos.x,
 							game->player_pos.pos.y);
 
-	draw_radius_to_player(game);
 	return (0);
 }
 
@@ -238,71 +148,74 @@ void render_vertical_line(t_game *game, int x_position, int height)
 	while (++i < WIN_HEIGHT)
 	{
 		if (i < height)
-			my_mlx_pixel_put(game->game_screen, i, x_position, line_color);
+			my_mlx_pixel_put(&game->game_screen, i, x_position, line_color);
 		else if (i < WIN_HEIGHT / 2)
-			my_mlx_pixel_put(game->game_screen, i, x_position, sky_color);
+			my_mlx_pixel_put(&game->game_screen, i, x_position, sky_color);
 		else
-			my_mlx_pixel_put(game->game_screen, i, x_position, floor_color);
+			my_mlx_pixel_put(&game->game_screen, i, x_position, floor_color);
 	}
+}
+
+void set_player_position(t_game* game)
+{
+	int i = -1;
+	int j;
+	while (++i < game->map_height)
+	{
+		j = -1;
+		while (++j < game->map_width)
+		{
+			if (ft_strchr("NSEW", game->map[i][j]) != NULL)
+			{
+				game->player_pos.pos = (t_v2){j * TILE_SIZE + TILE_SIZE / 2, i * TILE_SIZE + TILE_SIZE / 2};
+				if (game->map[i][j] == 'N')
+					game->player_pos.dir = (t_v2){0, -1};
+				else if (game->map[i][j] == 'S')
+					game->player_pos.dir = (t_v2){0, 1};
+				else if (game->map[i][j] == 'E')
+					game->player_pos.dir = (t_v2){1, 0};
+				else if (game->map[i][j] == 'W')
+					game->player_pos.dir = (t_v2){-1, 0};
+				return ;
+			}
+		}
+	}
+	print_error("Player position not found.", game);
+}
+
+void set_rays(t_game *game)
+{
+	
 }
 
 int main(void)
 {
 	t_game game;
 
+	game.map = parse_file("maps/map0.cub");
+	if (game.map == NULL)
+		print_error("Map can not be parsed.", NULL);
 	game.mlx = mlx_init();
 	game.mlx_win = mlx_new_window(game.mlx, WIN_WIDTH, WIN_HEIGHT, "Hello world!");
-	game.game_screen = malloc(sizeof(t_data));
-	if (!game.game_screen)
-		return (0);
-	game.game_screen->img = mlx_new_image(game.mlx, WIN_WIDTH, WIN_HEIGHT);
-	game.game_screen->addr = mlx_get_data_addr(game.game_screen->img,
-											   &game.game_screen->bits_per_pixel,
-											   &game.game_screen->line_length,
-											   &game.game_screen->endian);
-
-	// game.player_img = circle(game.mlx, 0x00FFFFFF, PLAYER_SIZE);
-	// game.wall_img = square_tile(game.mlx, 0x0000FF00);
-	// game.player_pos.pos.x = WIN_WIDTH / 2;
-	// game.player_pos.pos.y = WIN_HEIGHT / 2;
-	// game.player_pos.dir.x = 1;
-	// game.player_pos.dir.y = 0;
-	// game.map = malloc(sizeof(char *) * MAP_HEIGHT);
-	// if (!game.map)
-	// 	return (0);
-	// int i = -1;
-	// while (++i < MAP_HEIGHT)
-	// {
-	// 	game.map[i] = malloc(sizeof(char) * MAP_WIDTH);
-	// 	if (!game.map[i])
-	// 		return (0);
-	// }
-	// game.map[0] = "1111111111111111";
-	// game.map[1] = "1100000000000111";
-	// game.map[2] = "1100000000011111";
-	// game.map[3] = "1000010000000011";
-	// game.map[4] = "1000010000011111";
-	// game.map[5] = "1000000011111111";
-	// game.map[6] = "1000000011111111";
-	// game.map[7] = "1110000000000011";
-	// game.map[8] = "1111111111111111";
-
-	// // mlx_key_hook(game.mlx_win, key_hook, &game);
+	game.game_screen.img = mlx_new_image(game.mlx, WIN_WIDTH, WIN_HEIGHT);
+	game.game_screen.addr = mlx_get_data_addr(&game.game_screen.img,
+											  &game.game_screen.bits_per_pixel,
+											  &game.game_screen.line_length,
+											  &game.game_screen.endian);
+	game.wall_img[NORTH] = load_img_from_path(game.mlx, "./img/north_texture.xpm");
+	game.wall_img[EAST] = load_img_from_path(game.mlx, "./img/east_texture.xpm");
+	game.wall_img[SOUTH] = load_img_from_path(game.mlx, "./img/south_texture.xpm");
+	game.wall_img[WEST] = load_img_from_path(game.mlx, "./img/west_texture.xpm");
+	game.player_img = circle(game.mlx, 0x00FFFFFF, PLAYER_SIZE);
+	game.player_pos.pos.x = WIN_WIDTH / 2;
+	game.player_pos.pos.y = WIN_HEIGHT / 2;
+	game.player_pos.dir.x = 1;
+	game.player_pos.dir.y = 0;
+	game.map_width = ft_strlen(game.map[0]);
+	game.map_height = ft_strlen_array(game.map);
+	set_player_position(&game);
 	mlx_hook(game.mlx_win, 2, 1L << 0, key_hook, &game);
-	// mlx_loop_hook(game.mlx, render_next_frame, &game);
-	int j = -1;
-	while (++j < WIN_WIDTH)
-	{
-		render_vertical_line(&game, j, WIN_HEIGHT - j);
-	}
-
-
-	mlx_put_image_to_window(game.mlx,
-							game.mlx_win,
-							game.game_screen->img,
-							0,
-							0);
-
+	mlx_loop_hook(game.mlx, render_next_frame, &game);
 	mlx_loop(game.mlx);
 	destroy_game(&game);
 }
