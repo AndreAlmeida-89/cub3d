@@ -1,4 +1,6 @@
 SRC =		src/main.c 				\
+			src/cub3d.c				\
+			src/view.c
 
 SRC_B =		src_bonus/main_bonus.c	\
 
