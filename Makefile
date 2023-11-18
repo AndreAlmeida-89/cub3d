@@ -1,6 +1,8 @@
 SRC =		src/main.c 				\
 			src/cub3d.c				\
-			src/view.c
+			src/view.c				\
+			src/v2f.c 				\
+			src/v2i.c 				\
 
 SRC_B =		src_bonus/main_bonus.c	\
 
@@ -18,43 +20,41 @@ RM		=	rm -f
 
 CFLAGS	=	-Wall -Wextra -Werror
 
-#FM		=	-framework OpenGL -framework AppKit
+FM		=	-framework OpenGL -framework AppKit
 
-#LIBS	=	-Llibft -lft -Lmlx -lmlx
-
-
-
-# %.o:		%.c
-# 			$(CC) $(CFLAGS) -Imlx -c $< -o $@
-
-# %_b.o: 		%.c
-# 			$(CC) $(CFLAGS) -Imlx -c $< -o $@
+LIBS	=	-Llibft -lft -Lmlx -lmlx
 
 %.o:		%.c
-			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 -c $< -o $@
+			$(CC) $(CFLAGS) -Imlx -c $< -o $@
 
 %_b.o: 		%.c
-			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 $< -o $@
+			$(CC) $(CFLAGS) -Imlx -c $< -o $@
 
-# $(NAME):	$(OBJ)
-# 			@make -C libft
-# 			@make -C mlx
-# 			$(CC) $(OBJ) $(LIBS) $(FM) -o $(NAME)
+# %.o:		%.c
+# 			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 -c $< -o $@
 
-# $(NAME_B):	$(OBJ_B)
-# 			@make -C libft
-# 			@make -C mlx
-# 			$(CC) $(OBJ_B) $(LIBS) $(FM) -o $(NAME_B)
+# %_b.o: 		%.c
+# 			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 $< -o $@
 
 $(NAME):	$(OBJ)
 			@make -C libft
-			@make -C mlx_linux
-			$(CC) $(OBJ) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
+			@make -C mlx
+			$(CC) $(OBJ) $(LIBS) $(FM) -o $(NAME)
 
 $(NAME_B):	$(OBJ_B)
 			@make -C libft
-			@make -C mlx_linux
-			$(CC) $(OBJ_B) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME_B)
+			@make -C mlx
+			$(CC) $(OBJ_B) $(LIBS) $(FM) -o $(NAME_B)
+
+# $(NAME):	$(OBJ)
+# 			@make -C libft
+# 			@make -C mlx_linux
+# 			$(CC) $(OBJ) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
+
+# $(NAME_B):	$(OBJ_B)
+# 			@make -C libft
+# 			@make -C mlx_linux
+# 			$(CC) $(OBJ_B) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME_B)
 
 all:		$(NAME)
 
