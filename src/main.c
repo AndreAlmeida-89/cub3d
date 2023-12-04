@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 23:44:58 by andde-so          #+#    #+#             */
-/*   Updated: 2023/12/04 08:05:50 by andde-so         ###   ########.fr       */
+/*   Updated: 2023/12/04 08:34:52 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,6 @@ typedef struct s_game
 	double currentTime; // time of current frame
 	double oldTime;
 	size_t worldMap[MAP_WIDTH][MAP_HEIGHT];
-	size_t buffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 	size_t texture[8][TEX_WIDTH * TEX_HEIGHT];
 } t_game;
 
@@ -84,13 +83,6 @@ void my_mlx_pixel_put(t_data *data, int x, int y, int color)
 
 	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
 	*(unsigned int *)dst = color;
-}
-
-void draw_buffer(t_game *g)
-{
-	for (int y = 0; y < SCREEN_HEIGHT; y++)
-		for (int x = 0; x < SCREEN_WIDTH; x++)
-			my_mlx_pixel_put(&g->img, x, y, g->buffer[y][x]);
 }
 
 int main_loop(t_game *g)
@@ -215,12 +207,11 @@ int main_loop(t_game *g)
 			// make color darker for y-sides: R, G and B byte each divided through two with a "shift" and an "and"
 			if (side == 1)
 				color = (color >> 1) & 8355711;
-			g->buffer[y][x] = color;
+			my_mlx_pixel_put(&g->img, x, y, color);
 		}
 	}
-	draw_buffer(g);
 	mlx_put_image_to_window(g->mlx, g->mlx_win, g->img.img, 0, 0);
-	ft_bzero(g->buffer, sizeof(g->buffer));
+	ft_bzero(g->img.addr, SCREEN_HEIGHT * SCREEN_WIDTH * sizeof(int));
 	return (0);
 }
 
