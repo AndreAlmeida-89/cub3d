@@ -6,56 +6,45 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 13:27:50 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 13:39:54 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/05 14:26:41 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "./cub3d.h"
 
+static void move_foward(t_game *g, double move_speed)
+{
+	if (g->world_map[(int)(g->pos.x + g->dir.x * move_speed)][(int)(g->pos.y)] == 0)
+		g->pos.x += g->dir.x * move_speed;
+	if (g->world_map[(int)(g->pos.x)][(int)(g->pos.y + g->dir.y * move_speed)] == 0)
+		g->pos.y += g->dir.y * move_speed;
+}
+
+static void rotate(t_game *g, double rotSpeed)
+{
+	double old_dir_x = g->dir.x;
+	double old_plane_x = g->plane.x;
+
+	g->dir.x = g->dir.x * cos(-rotSpeed) - g->dir.y * sin(-rotSpeed);
+	g->dir.y = old_dir_x * sin(-rotSpeed) + g->dir.y * cos(-rotSpeed);
+	g->plane.x = g->plane.x * cos(-rotSpeed) - g->plane.y * sin(-rotSpeed);
+	g->plane.y = old_plane_x * sin(-rotSpeed) + g->plane.y * cos(-rotSpeed);
+}
+
 int handle_key_pressed(int keycode, t_game *g)
 {
-	double moveSpeed = 0.1; //the constant value is in squares/second
-	double rotSpeed = 0.05; //the constant value is in radians/second
+	double move_speed = 0.4;
+	double rotSpeed = 0.2;
 
-	// move forward if no wall in front of you
 	if (keycode == W_KEY)
-	{
-		if (g->worldMap[(int)(g->posX + g->dirX * moveSpeed)][(int)(g->posY)] == 0)
-			g->posX += g->dirX * moveSpeed;
-		if (g->worldMap[(int)(g->posX)][(int)(g->posY + g->dirY * moveSpeed)] == 0)
-			g->posY += g->dirY * moveSpeed;
-	}
-	// move backwards if no wall behind you
-	if (keycode == S_KEY)
-	{
-		if (g->worldMap[(int)(g->posX - g->dirX * moveSpeed)][(int)(g->posY)] == 0)
-			g->posX -= g->dirX * moveSpeed;
-		if (g->worldMap[(int)(g->posX)][(int)(g->posY - g->dirY * moveSpeed)] == 0)
-			g->posY -= g->dirY * moveSpeed;
-	}
-	// rotate to the right
-	if (keycode == D_KEY)
-	{
-		// both camera direction and camera plane must be rotated
-		double oldDirX = g->dirX;
-		g->dirX = g->dirX * cos(-rotSpeed) - g->dirY * sin(-rotSpeed);
-		g->dirY = oldDirX * sin(-rotSpeed) + g->dirY * cos(-rotSpeed);
-		double oldPlaneX = g->planeX;
-		g->planeX = g->planeX * cos(-rotSpeed) - g->planeY * sin(-rotSpeed);
-		g->planeY = oldPlaneX * sin(-rotSpeed) + g->planeY * cos(-rotSpeed);
-	}
-	// rotate to the left
-	if (keycode == A_KEY)
-	{
-		// both camera direction and camera plane must be rotated
-		double oldDirX = g->dirX;
-		g->dirX = g->dirX * cos(rotSpeed) - g->dirY * sin(rotSpeed);
-		g->dirY = oldDirX * sin(rotSpeed) + g->dirY * cos(rotSpeed);
-		double oldPlaneX = g->planeX;
-		g->planeX = g->planeX * cos(rotSpeed) - g->planeY * sin(rotSpeed);
-		g->planeY = oldPlaneX * sin(rotSpeed) + g->planeY * cos(rotSpeed);
-	}
-	if (keycode == ESC_KEY)
+		move_foward(g, move_speed);
+	else if (keycode == S_KEY)
+		move_foward(g, -move_speed);
+	else if (keycode == D_KEY)
+		rotate(g, rotSpeed);
+	else if (keycode == A_KEY)
+		rotate(g, -rotSpeed);
+	else if (keycode == ESC_KEY)
 		return (destroy_game(g));
 	return (0);
 }

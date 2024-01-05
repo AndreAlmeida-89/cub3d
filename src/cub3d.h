@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 13:29:22 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 13:38:32 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/05 14:26:41 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@
 #include <stdio.h>
 #include <mlx.h>
 
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
 #define MAP_HEIGHT 24
 #define MAP_WIDTH MAP_HEIGHT
 #define ABS(x) ((x) > 0 ? (x) : -(x))
@@ -57,20 +57,23 @@ typedef struct s_data
 	int endian;
 } t_data;
 
+typedef struct s_vector
+{
+	double x;
+	double y;
+} t_vector;
+
 typedef struct s_game
 {
 	void *mlx;
 	void *mlx_win;
 	t_data img;
-	double posX;
-	double posY; // x and y start position
-	double dirX;
-	double dirY; // initial direction vector
-	double planeX;
-	double planeY;		// the 2d raycaster version of camera plane
-	double currentTime; // time of current frame
-	double oldTime;
-	size_t worldMap[MAP_WIDTH][MAP_HEIGHT];
+	t_vector pos;
+	t_vector dir;
+	t_vector plane;		 // the 2d raycaster version of camera plane
+	double current_time; // time of current frame
+	double old_time;
+	size_t world_map[MAP_WIDTH][MAP_HEIGHT];
 	size_t texture[8][TEX_WIDTH * TEX_HEIGHT];
 } t_game;
 

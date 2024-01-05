@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 23:44:58 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 13:36:41 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/05 14:26:41 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@ void my_mlx_pixel_put(t_data *data, int x, int y, int color)
 
 void put_frames_per_second(t_game *g)
 {
-	g->currentTime = clock();
-	double frameTime = (g->currentTime - g->oldTime) / CLOCKS_PER_SEC; //frameTime is the time this frame has taken, in seconds
-	g->oldTime = g->currentTime;
+	double frameTime;
+	g->old_time = g->current_time;
+	g->current_time = clock();
+	frameTime = (g->current_time - g->old_time) / CLOCKS_PER_SEC;
 	char str[100];
 	sprintf(str, "FPS: %f", 1.0 / frameTime);
 	mlx_string_put(g->mlx, g->mlx_win, 10, 10, 0x00FFFFFF, str);
@@ -43,12 +44,12 @@ int main_loop(t_game *g)
 	{
 		// calculate ray position and direction
 		double cameraX = 2 * x / (double)SCREEN_WIDTH - 1; // x-coordinate in camera space
-		double rayDirX = g->dirX + g->planeX * cameraX;
-		double rayDirY = g->dirY + g->planeY * cameraX;
+		double rayDirX = g->dir.x + g->plane.x * cameraX;
+		double rayDirY = g->dir.y + g->plane.y * cameraX;
 
 		// which box of the map we're in
-		int mapX = (int)g->posX;
-		int mapY = (int)g->posY;
+		int mapX = (int)g->pos.x;
+		int mapY = (int)g->pos.y;
 
 		// length of ray from current position to next x or y-side
 		double sideDistX;
@@ -70,22 +71,22 @@ int main_loop(t_game *g)
 		if (rayDirX < 0)
 		{
 			stepX = -1;
-			sideDistX = (g->posX - mapX) * deltaDistX;
+			sideDistX = (g->pos.x - mapX) * deltaDistX;
 		}
 		else
 		{
 			stepX = 1;
-			sideDistX = (mapX + 1.0 - g->posX) * deltaDistX;
+			sideDistX = (mapX + 1.0 - g->pos.x) * deltaDistX;
 		}
 		if (rayDirY < 0)
 		{
 			stepY = -1;
-			sideDistY = (g->posY - mapY) * deltaDistY;
+			sideDistY = (g->pos.y - mapY) * deltaDistY;
 		}
 		else
 		{
 			stepY = 1;
-			sideDistY = (mapY + 1.0 - g->posY) * deltaDistY;
+			sideDistY = (mapY + 1.0 - g->pos.y) * deltaDistY;
 		}
 		// perform DDA
 		while (hit == 0)
@@ -104,7 +105,7 @@ int main_loop(t_game *g)
 				side = 1;
 			}
 			// Check if ray has hit a wall
-			if (g->worldMap[mapX][mapY] > 0)
+			if (g->world_map[mapX][mapY] > 0)
 				hit = 1;
 		}
 
@@ -128,14 +129,14 @@ int main_loop(t_game *g)
 			drawEnd = SCREEN_HEIGHT - 1;
 
 		// texturing calculations
-		int texNum = g->worldMap[mapX][mapY] - 1; // 1 subtracted from it so that texture 0 can be used!
+		int texNum = g->world_map[mapX][mapY] - 1; // 1 subtracted from it so that texture 0 can be used!
 
 		// calculate value of wallX
 		double wallX; // where exactly the wall was hit
 		if (side == 0)
-			wallX = g->posY + perpWallDist * rayDirY;
+			wallX = g->pos.y + perpWallDist * rayDirY;
 		else
-			wallX = g->posX + perpWallDist * rayDirX;
+			wallX = g->pos.x + perpWallDist * rayDirX;
 		wallX -= floor((wallX));
 
 		// x coordinate on the texture
@@ -190,7 +191,7 @@ void init_textures(t_game *g)
 
 void init_world_map(t_game *g)
 {
-	const size_t worldMap[MAP_WIDTH][MAP_HEIGHT] = {
+	const size_t world_map[MAP_WIDTH][MAP_HEIGHT] = {
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 7, 7, 7, 7},
 		{4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
 		{4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
@@ -216,10 +217,8 @@ void init_world_map(t_game *g)
 		{4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2},
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3}};
 
-	ft_memcpy(g->worldMap, worldMap, sizeof(worldMap));
+	ft_memcpy(g->world_map, world_map, sizeof(world_map));
 }
-
-
 
 int main(void)
 {
@@ -233,14 +232,14 @@ int main(void)
 								   &g.img.bits_per_pixel,
 								   &g.img.line_length,
 								   &g.img.endian);
-	g.posX = 22.0;
-	g.posY = 11.5;
-	g.dirX = -1.0;
-	g.dirY = 0.0;
-	g.planeX = 0.0;
-	g.planeY = 0.66;
-	g.currentTime = 0.0;
-	g.oldTime = 0.0;
+	g.pos.x = 22.0;
+	g.pos.y = 11.5;
+	g.dir.x = -1.0;
+	g.dir.y = 0.0;
+	g.plane.x = 0.0;
+	g.plane.y = 0.66;
+	g.current_time = 0.0;
+	g.old_time = 0.0;
 	mlx_hook(g.mlx_win, 2, 1L << 0, handle_key_pressed, &g);
 	mlx_hook(g.mlx_win, 17, 1L << 17, destroy_game, &g);
 	mlx_loop_hook(g.mlx, main_loop, &g);
