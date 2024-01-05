@@ -1,4 +1,5 @@
 SRC =		src/main.c 				\
+			src/handle_key_pressed.c	\
 
 SRC_B =		src_bonus/main_bonus.c	\
 

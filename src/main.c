@@ -6,69 +6,11 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 23:44:58 by andde-so          #+#    #+#             */
-/*   Updated: 2023/12/04 08:34:52 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/05 13:36:41 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../libft/libft.h"
-#include "../mlx/mlx.h"
-#include <math.h>
-
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
-#define MAP_HEIGHT 24
-#define MAP_WIDTH MAP_HEIGHT
-#define ABS(x) ((x) > 0 ? (x) : -(x))
-
-#define TEX_WIDTH 64
-#define TEX_HEIGHT TEX_WIDTH
-
-#if __APPLE__
-typedef enum e_key
-{
-	W_KEY = 13,
-	S_KEY = 1,
-	D_KEY = 2,
-	A_KEY = 0,
-	ESC_KEY = 53
-} t_key;
-#else
-typedef enum e_key
-{
-	W_KEY = 119,
-	S_KEY = 115,
-	D_KEY = 100,
-	A_KEY = 97,
-	ESC_KEY = 65307
-} t_key;
-
-#endif
-
-typedef struct s_data
-{
-	void *img;
-	char *addr;
-	int bits_per_pixel;
-	int line_length;
-	int endian;
-} t_data;
-
-typedef struct s_game
-{
-	void *mlx;
-	void *mlx_win;
-	t_data img;
-	double posX;
-	double posY; // x and y start position
-	double dirX;
-	double dirY; // initial direction vector
-	double planeX;
-	double planeY;		// the 2d raycaster version of camera plane
-	double currentTime; // time of current frame
-	double oldTime;
-	size_t worldMap[MAP_WIDTH][MAP_HEIGHT];
-	size_t texture[8][TEX_WIDTH * TEX_HEIGHT];
-} t_game;
+#include "./cub3d.h"
 
 int destroy_game(t_game *g)
 {
@@ -83,6 +25,16 @@ void my_mlx_pixel_put(t_data *data, int x, int y, int color)
 
 	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
 	*(unsigned int *)dst = color;
+}
+
+void put_frames_per_second(t_game *g)
+{
+	g->currentTime = clock();
+	double frameTime = (g->currentTime - g->oldTime) / CLOCKS_PER_SEC; //frameTime is the time this frame has taken, in seconds
+	g->oldTime = g->currentTime;
+	char str[100];
+	sprintf(str, "FPS: %f", 1.0 / frameTime);
+	mlx_string_put(g->mlx, g->mlx_win, 10, 10, 0x00FFFFFF, str);
 }
 
 int main_loop(t_game *g)
@@ -211,7 +163,8 @@ int main_loop(t_game *g)
 		}
 	}
 	mlx_put_image_to_window(g->mlx, g->mlx_win, g->img.img, 0, 0);
-	ft_bzero(g->img.addr, SCREEN_HEIGHT * SCREEN_WIDTH * sizeof(int));
+	put_frames_per_second(g);
+	ft_bzero(g->img.addr, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
 	return (0);
 }
 
@@ -266,53 +219,7 @@ void init_world_map(t_game *g)
 	ft_memcpy(g->worldMap, worldMap, sizeof(worldMap));
 }
 
-int key_hook(int keycode, t_game *g)
-{
-	double moveSpeed = 0.25;
-	double rotSpeed = 0.10;
 
-	// move forward if no wall in front of you
-	if (keycode == W_KEY)
-	{
-		if (g->worldMap[(int)(g->posX + g->dirX * moveSpeed)][(int)(g->posY)] == 0)
-			g->posX += g->dirX * moveSpeed;
-		if (g->worldMap[(int)(g->posX)][(int)(g->posY + g->dirY * moveSpeed)] == 0)
-			g->posY += g->dirY * moveSpeed;
-	}
-	// move backwards if no wall behind you
-	if (keycode == S_KEY)
-	{
-		if (g->worldMap[(int)(g->posX - g->dirX * moveSpeed)][(int)(g->posY)] == 0)
-			g->posX -= g->dirX * moveSpeed;
-		if (g->worldMap[(int)(g->posX)][(int)(g->posY - g->dirY * moveSpeed)] == 0)
-			g->posY -= g->dirY * moveSpeed;
-	}
-	// rotate to the right
-	if (keycode == D_KEY)
-	{
-		// both camera direction and camera plane must be rotated
-		double oldDirX = g->dirX;
-		g->dirX = g->dirX * cos(-rotSpeed) - g->dirY * sin(-rotSpeed);
-		g->dirY = oldDirX * sin(-rotSpeed) + g->dirY * cos(-rotSpeed);
-		double oldPlaneX = g->planeX;
-		g->planeX = g->planeX * cos(-rotSpeed) - g->planeY * sin(-rotSpeed);
-		g->planeY = oldPlaneX * sin(-rotSpeed) + g->planeY * cos(-rotSpeed);
-	}
-	// rotate to the left
-	if (keycode == A_KEY)
-	{
-		// both camera direction and camera plane must be rotated
-		double oldDirX = g->dirX;
-		g->dirX = g->dirX * cos(rotSpeed) - g->dirY * sin(rotSpeed);
-		g->dirY = oldDirX * sin(rotSpeed) + g->dirY * cos(rotSpeed);
-		double oldPlaneX = g->planeX;
-		g->planeX = g->planeX * cos(rotSpeed) - g->planeY * sin(rotSpeed);
-		g->planeY = oldPlaneX * sin(rotSpeed) + g->planeY * cos(rotSpeed);
-	}
-	if (keycode == ESC_KEY)
-		destroy_game(g);
-	return (0);
-}
 
 int main(void)
 {
@@ -334,7 +241,7 @@ int main(void)
 	g.planeY = 0.66;
 	g.currentTime = 0.0;
 	g.oldTime = 0.0;
-	mlx_hook(g.mlx_win, 2, 1L << 0, key_hook, &g);
+	mlx_hook(g.mlx_win, 2, 1L << 0, handle_key_pressed, &g);
 	mlx_hook(g.mlx_win, 17, 1L << 17, destroy_game, &g);
 	mlx_loop_hook(g.mlx, main_loop, &g);
 	mlx_loop(g.mlx);
