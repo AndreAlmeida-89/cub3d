@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 23:44:58 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/06 16:08:21 by pvieira-         ###   ########.fr       */
+/*   Updated: 2024/01/06 16:53:02 by pvieira-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,14 @@ int destroy_game(t_game *g)
 	mlx_destroy_image(g->mlx, g->img.img);
 	mlx_destroy_window(g->mlx, g->mlx_win);
 	exit(0);
+}
+
+size_t	my_mlx_pixel_get(t_data *data, int x, int y)
+{
+	char	*dst;
+
+	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
+	return (*(size_t *)dst);
 }
 
 void my_mlx_pixel_put(t_data *data, int x, int y, int color)
@@ -154,11 +162,6 @@ int main_loop(t_game *g)
 		// How much to increase the texture coordinate per screen pixel
 		double step = 1.0 * TEX_HEIGHT / lineHeight;
 		// Starting texture coordinate
-//		for (int y = 0; y < SCREEN_HEIGHT/2; y++)
-//		{
-//			for (int x = 0; x < SCREEN_WIDTH; x++)
-//				my_mlx_pixel_put(&g->img, x, y, 0xFF00FFFF);
-//		}
 		double texPos = (drawStart - pitch - SCREEN_HEIGHT / 2 + lineHeight / 2) * step;
 		for (int y = 0; y < SCREEN_HEIGHT; y++)
 		{
@@ -167,7 +170,9 @@ int main_loop(t_game *g)
 				// Cast the texture coordinate to integer, and mask with (texHeight - 1) in case of overflow
 				int texY = (int)texPos & (TEX_HEIGHT - 1);
 				texPos += step;
-				size_t color = g->texture[texNum][TEX_HEIGHT * texY + texX];
+				// size_t color = g->wall_1.addr[TEX_HEIGHT * texY + texX];
+				size_t color = my_mlx_pixel_get(&g->wall_1, texX, texY);
+				(void)texNum;
 				// make color darker for y-sides: R, G and B byte each divided through two with a "shift" and an "and"
 				if (side == 1)
 					color = (color >> 1) & 8355711;
@@ -182,7 +187,7 @@ int main_loop(t_game *g)
 			}
 		}
 	}
-	mlx_clear_window(g->mlx, g->mlx_win);
+	// mlx_clear_window(g->mlx, g->mlx_win);
 	mlx_put_image_to_window(g->mlx, g->mlx_win, g->img.img, 0, 0);
 	put_frames_per_second(g);
 	// mlx_do_sync(g->mlx);
@@ -253,6 +258,12 @@ int main(void)
 								   &g.img.bits_per_pixel,
 								   &g.img.line_length,
 								   &g.img.endian);
+	g.wall_1.img = mlx_xpm_file_to_image(g.mlx,"./img/wall1.xpm", &g.wall_1.width, &g.wall_1.height);
+	g.wall_1.addr = mlx_get_data_addr(g.wall_1.img,
+								   &g.wall_1.bits_per_pixel,
+								   &g.wall_1.line_length,
+								   &g.wall_1.endian);
+	
 	g.pos.x = 22.0;
 	g.pos.y = 11.5;
 	g.dir.x = -1.0;

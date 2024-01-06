@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 13:29:22 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/06 15:15:10 by pvieira-         ###   ########.fr       */
+/*   Updated: 2024/01/06 17:51:25 by pvieira-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,8 @@
 #define MAP_HEIGHT 24
 #define MAP_WIDTH MAP_HEIGHT
 #define ABS(x) ((x) > 0 ? (x) : -(x))
-#define TEX_WIDTH 64
+#define TEX_WIDTH 48
 #define TEX_HEIGHT TEX_WIDTH
-
 #if __APPLE__
 typedef enum e_key
 {
@@ -55,6 +54,8 @@ typedef struct s_data
 	int bits_per_pixel;
 	int line_length;
 	int endian;
+	int width;
+	int height;
 } t_data;
 
 typedef struct s_vector
@@ -75,6 +76,7 @@ typedef struct s_game
 	double old_time;
 	size_t world_map[MAP_WIDTH][MAP_HEIGHT];
 	size_t texture[8][TEX_WIDTH * TEX_HEIGHT];
+	t_data wall_1;
 } t_game;
 
 int handle_key_pressed(int keycode, t_game *g);
