@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 23:44:58 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 14:26:41 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/06 01:01:15 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,16 @@ void put_frames_per_second(t_game *g)
 
 int main_loop(t_game *g)
 {
-	for (int x = 0; x < SCREEN_WIDTH; x++)
+	int x;
+
+	x = -1;
+	while (++x < SCREEN_WIDTH)
 	{
-		// calculate ray position and direction
-		double cameraX = 2 * x / (double)SCREEN_WIDTH - 1; // x-coordinate in camera space
-		double rayDirX = g->dir.x + g->plane.x * cameraX;
-		double rayDirY = g->dir.y + g->plane.y * cameraX;
+		const double camera_x = 2 * x / (double)SCREEN_WIDTH - 1; // x-coordinate in camera space
+		const t_vector ray_dir ={
+			.x = g->dir.x + g->plane.x * camera_x,
+			.y = g->dir.y + g->plane.y * camera_x,
+		};
 
 		// which box of the map we're in
 		int mapX = (int)g->pos.x;
@@ -56,8 +60,8 @@ int main_loop(t_game *g)
 		double sideDistY;
 
 		// length of ray from one x or y-side to next x or y-side
-		double deltaDistX = (rayDirX == 0) ? 1e30 : ABS(1 / rayDirX);
-		double deltaDistY = (rayDirY == 0) ? 1e30 : ABS(1 / rayDirY);
+		double deltaDistX = (ray_dir.x == 0) ? 1e30 : ABS(1 / ray_dir.x);
+		double deltaDistY = (ray_dir.y == 0) ? 1e30 : ABS(1 / ray_dir.y);
 		double perpWallDist;
 
 		// what direction to step in x or y-direction (either +1 or -1)
@@ -68,7 +72,7 @@ int main_loop(t_game *g)
 		int side;	 // was a NS or a EW wall hit?
 
 		// calculate step and initial sideDist
-		if (rayDirX < 0)
+		if (ray_dir.x < 0)
 		{
 			stepX = -1;
 			sideDistX = (g->pos.x - mapX) * deltaDistX;
@@ -78,7 +82,7 @@ int main_loop(t_game *g)
 			stepX = 1;
 			sideDistX = (mapX + 1.0 - g->pos.x) * deltaDistX;
 		}
-		if (rayDirY < 0)
+		if (ray_dir.y < 0)
 		{
 			stepY = -1;
 			sideDistY = (g->pos.y - mapY) * deltaDistY;
@@ -134,16 +138,16 @@ int main_loop(t_game *g)
 		// calculate value of wallX
 		double wallX; // where exactly the wall was hit
 		if (side == 0)
-			wallX = g->pos.y + perpWallDist * rayDirY;
+			wallX = g->pos.y + perpWallDist * ray_dir.y;
 		else
-			wallX = g->pos.x + perpWallDist * rayDirX;
+			wallX = g->pos.x + perpWallDist * ray_dir.x;
 		wallX -= floor((wallX));
 
 		// x coordinate on the texture
 		int texX = (int)(wallX * (double)(TEX_WIDTH));
-		if (side == 0 && rayDirX > 0)
+		if (side == 0 && ray_dir.x > 0)
 			texX = TEX_WIDTH - texX - 1;
-		if (side == 1 && rayDirY < 0)
+		if (side == 1 && ray_dir.y < 0)
 			texX = TEX_WIDTH - texX - 1;
 
 		// TODO: an integer-only bresenham or DDA like algorithm could make the texture coordinate stepping faster
@@ -163,8 +167,10 @@ int main_loop(t_game *g)
 			my_mlx_pixel_put(&g->img, x, y, color);
 		}
 	}
+	// mlx_clear_window(g->mlx, g->mlx_win);
 	mlx_put_image_to_window(g->mlx, g->mlx_win, g->img.img, 0, 0);
 	put_frames_per_second(g);
+	// mlx_do_sync(g->mlx);
 	ft_bzero(g->img.addr, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
 	return (0);
 }

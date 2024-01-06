@@ -22,10 +22,10 @@ FM		=	-framework OpenGL -framework AppKit
 LIBS	=	-Llibft -lft -Lmlx -lmlx
 
 %.o:		%.c
-			$(CC) $(CFLAGS) -Imlx -c $< -o $@
+			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
 
 %_b.o: 		%.c
-			$(CC) $(CFLAGS) -Imlx -c $< -o $@
+			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
 
 # %.o:		%.c
 # 			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 -c $< -o $@

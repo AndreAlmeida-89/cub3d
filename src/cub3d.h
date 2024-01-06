@@ -6,14 +6,14 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 13:29:22 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 14:26:41 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/05 14:38:29 by andde-so         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CUB3D_H
 #define CUB3D_H
 
-#include "../libft/libft.h"
+#include <libft.h>
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -70,8 +70,8 @@ typedef struct s_game
 	t_data img;
 	t_vector pos;
 	t_vector dir;
-	t_vector plane;		 // the 2d raycaster version of camera plane
-	double current_time; // time of current frame
+	t_vector plane;
+	double current_time;
 	double old_time;
 	size_t world_map[MAP_WIDTH][MAP_HEIGHT];
 	size_t texture[8][TEX_WIDTH * TEX_HEIGHT];
