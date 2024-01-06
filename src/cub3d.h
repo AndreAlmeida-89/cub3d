@@ -6,7 +6,7 @@
 /*   By: andde-so <andde-so@student.42.rio>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 13:29:22 by andde-so          #+#    #+#             */
-/*   Updated: 2024/01/05 14:38:29 by andde-so         ###   ########.fr       */
+/*   Updated: 2024/01/06 15:15:10 by pvieira-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <mlx.h>
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 #define MAP_HEIGHT 24
 #define MAP_WIDTH MAP_HEIGHT

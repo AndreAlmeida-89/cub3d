@@ -21,53 +21,53 @@ FM		=	-framework OpenGL -framework AppKit
 
 LIBS	=	-Llibft -lft -Lmlx -lmlx
 
-%.o:		%.c
-			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
+#%.o:		%.c
+#			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
 
-%_b.o: 		%.c
-			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
+#%_b.o: 		%.c
+#			$(CC) $(CFLAGS) -Imlx -Ilibft -c $< -o $@
 
-# %.o:		%.c
-# 			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 -c $< -o $@
+%.o:%.c
+	$(CC) $(CFLAGS) -I/usr/include -Ilibft -Imlx_linux -O3 -c $< -o $@
 
-# %_b.o: 		%.c
-# 			$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 $< -o $@
+%_b.o:%.c
+	$(CC) $(CFLAGS) -I/usr/include -Ilibft -Imlx_linux -O3 $< -o $@
 
-$(NAME):	$(OBJ)
-			@make -C libft
-			@make -C mlx
-			$(CC) $(OBJ) $(LIBS) $(FM) -o $(NAME)
+#$(NAME):	$(OBJ)
+#			@make -C libft
+#			@make -C mlx
+#			$(CC) $(OBJ) $(LIBS) $(FM) -o $(NAME)
+#
+#$(NAME_B):	$(OBJ_B)
+#			@make -C libft
+#			@make -C mlx
+#			$(CC) $(OBJ_B) $(LIBS) $(FM) -o $(NAME_B)
 
-$(NAME_B):	$(OBJ_B)
-			@make -C libft
-			@make -C mlx
-			$(CC) $(OBJ_B) $(LIBS) $(FM) -o $(NAME_B)
+$(NAME):$(OBJ)
+	@make -C libft
+	@make -C mlx_linux
+	$(CC) $(OBJ) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
 
-# $(NAME):	$(OBJ)
-# 			@make -C libft
-# 			@make -C mlx_linux
-# 			$(CC) $(OBJ) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
+$(NAME_B):$(OBJ_B)
+	@make -C libft
+	@make -C mlx_linux
+	$(CC) $(OBJ_B) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME_B)
 
-# $(NAME_B):	$(OBJ_B)
-# 			@make -C libft
-# 			@make -C mlx_linux
-# 			$(CC) $(OBJ_B) -Llibft -lft -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME_B)
+all:	$(NAME)
 
-all:		$(NAME)
+run:	$(NAME)
+	./$(NAME)
 
-run:		$(NAME)
-			./$(NAME)
-
-bonus:		$(NAME_B)
+bonus:	$(NAME_B)
 
 clean:
-			@make -C libft clean
-			@make -C mlx clean
-			$(RM) $(OBJ) $(OBJ_B)
+	@make -C libft clean
+	@make -C mlx clean
+	$(RM) $(OBJ) $(OBJ_B)
 
-fclean:		clean
-			$(RM) $(NAME) $(NAME_B)
+fclean:clean
+	$(RM) $(NAME) $(NAME_B)
 
-re:			fclean all
+re:	fclean all
 
-.PHONY:		all clean fclean re
+.PHONY:all clean fclean re
